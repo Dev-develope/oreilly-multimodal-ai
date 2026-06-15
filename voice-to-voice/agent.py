@@ -10,7 +10,9 @@ from livekit.agents import (
     llm,
 )
 from livekit.agents.pipeline import VoicePipelineAgent
-from livekit.plugins import openai, deepgram, silero
+from livekit.plugins import silero
+
+import sixtydb
 
 
 load_dotenv(dotenv_path=".env.local")
@@ -37,15 +39,16 @@ async def entrypoint(ctx: JobContext):
     participant = await ctx.wait_for_participant()
     logger.info(f"starting voice assistant for participant {participant.identity}")
 
-    # This project is configured to use Deepgram STT, OpenAI LLM and TTS plugins
-    # Other great providers exist like Cartesia and ElevenLabs
-    # Learn more and pick the best one for your app:
+    # This project is configured to use the 60dB AI provider for STT, LLM and
+    # TTS. The 60dB plugin (see ./sixtydb) follows the same plugin pattern as
+    # the official LiveKit plugins, so swapping providers is a one-line change.
+    # Other great providers exist like Deepgram, OpenAI, Cartesia and ElevenLabs:
     # https://docs.livekit.io/agents/plugins
     agent = VoicePipelineAgent(
         vad=ctx.proc.userdata["vad"],
-        stt=deepgram.STT(),
-        llm=openai.LLM(model="gpt-4o-mini"),
-        tts=openai.TTS(),
+        stt=sixtydb.STT(),
+        llm=sixtydb.LLM(model="60db-chat"),
+        tts=sixtydb.TTS(voice="andrew"),
         chat_ctx=initial_ctx,
     )
 
